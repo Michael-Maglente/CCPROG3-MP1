@@ -4,7 +4,7 @@ public class PvZ {
     static final int ROWS = 6;
     static final int COLS = 10;
     static final int TIME_LIMIT = 180;
-s
+
     // State of the game //
     static int sun = 50;
     static int currentTime = 0;
