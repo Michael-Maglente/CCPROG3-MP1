@@ -11,7 +11,10 @@ public class Peashooter {
     private final int y;
     // private int lastProdTime; // last time a peashooter was planted
 
-    Peashooter(int x, int y){
+    /**
+     * This gives the Peashooter its stats 
+     */
+    Peashooter(int x, int y){ 
         this.cost = 100;
         this.health = 6;
         this.damage = 20;

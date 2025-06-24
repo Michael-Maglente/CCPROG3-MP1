@@ -12,7 +12,9 @@ public class Sunflower {
     private final int x;
     private final int y;
 
-
+    /**
+     * This constructor holds the Sunflower stats and generates a sunflower
+     */
     Sunflower(int x, int y, int currentTime){
         this.x = x;
         this.y = y;

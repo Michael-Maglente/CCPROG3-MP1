@@ -1,7 +1,4 @@
 import java.util.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.lang.Thread;
 public class PvZ {
     // CONSTANTS //
     static final int ROWS = 6;
@@ -29,7 +26,7 @@ public class PvZ {
 
     public static void main(String[] args) throws InterruptedException{
         // LANE INITIALIZATION //
-        // MENU //
+
         // game start
         // GAME LOOP //
         laneInitialized();
