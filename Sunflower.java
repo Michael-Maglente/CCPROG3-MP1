@@ -1,32 +1,20 @@
-public class Sunflower {
-    private final int cost;
-    private int health;
-    private final double regenerateRate;
+public class Sunflower extends Plant{
     private final int amountSun;
     private final int sunProductionInterval;
     private int lastProdTime; // last time a sunflower was planted
-    private final int damage;
-    private final int range;
-    private final int directDamage;
 
-    private final int x;
-    private final int y;
-
-    /**
-     * This constructor holds the Sunflower stats and generates a sunflower
-     */
     Sunflower(int x, int y, int currentTime){
-        this.x = x;
-        this.y = y;
+        super(x, y);
         this.cost = 50;
         this.health = 6;
         this.regenerateRate = 7.5;
-        this.sunProductionInterval = 24;
-        this.amountSun = 25;
-        this.lastProdTime = currentTime;
         this.damage = 0;
         this.directDamage = 0;
         this.range = 0;
+
+        this.sunProductionInterval = 24;
+        this.amountSun = 25;
+        this.lastProdTime = currentTime;
     }
 
     public boolean canProduceSun(int currentTime){
@@ -35,26 +23,6 @@ public class Sunflower {
 
     public void produceSun(int currentTime){
         lastProdTime = currentTime;
-    }
-
-    public boolean isDead(){
-        return health <= 0;
-    }
-
-    public void loseHP(int dmg){
-        health -= dmg;
-    }
-
-    public double getRegenerateRate() {
-        return regenerateRate;
-    }
-
-    public int getCost() {
-        return cost;
-    }
-
-    public int getHealth() {
-        return health;
     }
 
     public int getSunAmount() {
@@ -71,13 +39,5 @@ public class Sunflower {
 
     public void setLastProdTime(int time){
         this.lastProdTime = time;
-    }
-
-    public int getX() {
-        return x;
-    }
-
-    public int getY() {
-        return y;
     }
 }
