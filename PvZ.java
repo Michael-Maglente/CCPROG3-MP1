@@ -1,28 +1,33 @@
 import java.util.*;
-
+import java.util.ArrayList;
+import java.util.List;
+import java.lang.Thread;
 public class PvZ {
     // CONSTANTS //
-    static final int ROWS = 6;
-    static final int COLS = 10;
-    static final int TIME_LIMIT = 180;
+    public static final int ROWS = 6;
+    public static final int COLS = 10;
+    public static final int TIME_LIMIT = 180;
+    public static final Object lock = new Object();
+
 
     // State of the game //
-    static int sun = 50;
-    static int currentTime = 0;
-    static int sunDrops = 0;
+    public static int sun = 50;
+    public static int currentTime = 0;
+    public static int sunDrops = 0;
+    public static boolean showPlantPlacementPrompt = true;
 
-    static Scanner scanner = new Scanner(System.in);
-    static Random random = new Random(); // for zombie location control //
+    public static Scanner scanner = new Scanner(System.in);
+    public static Random random = new Random(); // for zombie location control //
 
     // static List<Peashooter> peashooters = new ArrayList<>(); // where peashooters are stored
     // static List<Sunflower> sunflowers = new ArrayList<>(); // where sunflowers are stored
-    static List<Plant> plants = new ArrayList<>(); // where plants are stored now //
-    static List<Zombie>[] laneZombies = new ArrayList[ROWS]; // where zombies are stored or initialized //
-    static List<int []> peas = new ArrayList<>();
-    static String[][] lawn = new String[ROWS][COLS];
+    public static List<Plant> plants = new ArrayList<>(); // where plants are stored now //
+    public static List<Zombie>[] laneZombies = new ArrayList[ROWS]; // where zombies are stored or initialized //
+    public static List<int []> peas = new ArrayList<>();
+    public static String[][] lawn = new String[ROWS][COLS];
 
-    static Map<String, Double> lastPlantedTime = new HashMap<>();
-    static String timeFormat(int t){
+    public static Map<String, Double> lastPlantedTime = new HashMap<>();
+    public static String timeFormat(int t){
         return String.format("%02d:%02d", t / 60, t % 60);
     }
 
@@ -35,7 +40,18 @@ public class PvZ {
         System.out.println("READY...SET...PLANT!");
         System.out.println("Duration: 03:00 | Current Sun: " + sun);
 
-        while (currentTime <= TIME_LIMIT) {
+        Thread gameLoopThread = new Thread(new GameLoop());
+        Thread inputThread = new Thread(new InputHandler());
+
+        gameLoopThread.start();
+        inputThread.start();
+
+        gameLoopThread.join();
+        inputThread.interrupt();
+
+        System.out.println("Game over! Plants win!");
+       // while (currentTime <= TIME_LIMIT) {
+            /*
             System.out.println("\nTime: " + timeFormat(currentTime));
             System.out.println("Current Sun: " + sun);
 
@@ -70,8 +86,8 @@ public class PvZ {
 
             currentTime++;
             Thread.sleep(1000);
-        }
-        System.out.println("Game over! Plants win");
+           */
+        // }
     }
 
     // LAWN DISPLAY //
@@ -218,7 +234,7 @@ public class PvZ {
      *
      */
     // PLANT PLACEMENT //
-    public static void plantPlacementPrompt(){
+    public static void plantPlacementPrompt(Scanner scanner){
             plantCooldowns();
 
             System.out.println("Do you want to use: [S] Shovel, [SF] Sunflower, [P] Peashooter to the board, or skip.");
@@ -517,13 +533,59 @@ public class PvZ {
      * Controls if a plant tile is occupied by a plant
      *
      */
-    static boolean isTileOccupied(int x, int y){
+    public static boolean isTileOccupied(int x, int y){
         for(Plant p : plants){
             if(p.getX() == x && p.getY() == y){
                 return true;
             }
         }
         return false;
+    }
+    public static boolean shouldShowPlantingPrompt(){
+        return ((currentTime % 10 > 0 && currentTime % 10 < 10 && currentTime > 30 && currentTime < 80) ||
+                (currentTime % 5 >= 0 && currentTime % 5 <= 5 && currentTime > 81 && currentTime < 140) ||
+                (currentTime % 3 >= 0 && currentTime % 3 <= 3 && currentTime > 141 && currentTime < 170) ||
+                (currentTime > 171 && currentTime < 180));
+    }
+
+    public static void gameTick(){
+        System.out.println("\nTime: " + timeFormat(currentTime));
+        System.out.println("Current Sun: " + sun);
+
+        // LAWN WORK //
+        changeLawn();
+        displayLawn();
+
+        // SUN PRODUCTION //
+        sunDropFromSky();
+        produceSunFromSunflower();
+        collectSun();
+
+        // ZOMBIE LOGIC //
+        // zombieSpawn();
+        // moveZombies();
+        // plantVsZombie();
+
+        // PLANT ATTACK LOGIC //
+        // peashooterShoot();
+        // movePeas();
+
+        // PLANT PLACEMENT AND REMOVAL //
+        // deadPlantsAndZombies(); //
+    }
+
+    public static void handleInput(Scanner scanner){
+        System.out.println("ACTION MENU: ");
+        System.out.println("[A] Add Plant ");
+        System.out.println("[C] Collect Sun");
+        System.out.print("Choose an option: ");
+        String input = scanner.nextLine().trim().toUpperCase();
+
+        switch(input){
+            case "A": plantPlacementPrompt(scanner); break;
+            case "C": collectSun(); break;
+            default: break;
+        }
     }
     /*
         Sources:
@@ -532,5 +594,6 @@ public class PvZ {
             https://www.reddit.com/r/java/comments/4v2uf9/made_a_textbased_open_world_pokemon_game_and_i/
             https://www.youtube.com/watch?v=GTP5lVEKXaU
             https://www.w3schools.com/java/java_inheritance.asp
+            https://www.youtube.com/watch?v=taI7G6U29L8
     */
 }
