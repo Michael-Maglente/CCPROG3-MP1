@@ -1,33 +1,58 @@
 import java.util.*;
-
+/**
+ * Welcome to Plants Vs Zombies. This is the main driver for simulating the game in console.
+ * This handles the entire game loop, input handling, game states, and entity interactions:
+ *  1. Managing the timings and game loop
+ *  2. Zombie spawning over time
+ *  3. Plant placements
+ *  4. Sun production and collection handling
+ *  5. Moving zombies and combat engagements
+ *  6. Lawn state display and action prompting.
+ */
 public class PvZ {
-    // CONSTANTS //
+    /** Number of playable rows*/
     public static final int ROWS = 6;
+    /** Number of playable columns*/
     public static final int COLS = 10;
+    /** Time limit of entire game */
     public static final int TIME_LIMIT = 180;
 
     // State of the game //
+    /** Sun available for player */
     public static int sun = 50;
+    /** Game time in seconds */
     public static int currentTime = 0;
+    /** Uncollected sun as it falls from the sky */
     public static int sunDrops = 0;
+    /** State of entire game running */
     public static boolean gameRunning = true;
 
+    /** Scanner object for handling input of user*/
     public static Scanner scanner = new Scanner(System.in);
+    /** Random object for zombie placement*/
     public static Random random = new Random(); // for zombie location control //
-
-    // static List<Peashooter> peashooters = new ArrayList<>(); // where peashooters are stored
-    // static List<Sunflower> sunflowers = new ArrayList<>(); // where sunflowers are stored
+    /** List of plants placed by the player */
     public static List<Plant> plants = new ArrayList<>(); // where plants are stored now //
-    // public static List<Zombie>[] laneZombies = new ArrayList[ROWS]; // where zombies are stored or initialized //
+    /** List of zombies in each row/lane */
     public static List<List<Zombie>> laneZombies = new ArrayList<>();
+    /** Queue of peas (projectiles) on the lawn */
     public static List<int []> peas = new ArrayList<>();
+    /** 2D grid representing the lawn */
     public static String[][] lawn = new String[ROWS][COLS];
 
+    /** Last planted timestamps for cooldown tracking */
     public static Map<String, Double> lastPlantedTime = new HashMap<>();
+    /**
+     * Displays the time format of the game (MM:SS)
+     * */
     public static String timeFormat(int t){
         return String.format("%02d:%02d", t / 60, t % 60);
     }
-
+    /**
+     * The main method of the game, which starts and runs the game for 3 minutes
+     * Initializes game state, loops every second, and performs timed events
+     * @param args command-line arguments (not used)
+     * */
     public static void main(String[] args) throws InterruptedException{
         // LANE INITIALIZATION //
         laneInitialized();
@@ -480,7 +505,7 @@ public class PvZ {
             }
         }
         */
-        int spawnInterval = 0; // no. of seconds it takes zombies to spawn
+        int spawnInterval = 0; // no. of seconds, it takes zombies to spawn
         int spawnCount = 1; // no. of zombies to spawn
 
         if(currentTime >= 30 && currentTime <= 80 && currentTime % 10 == 0){
@@ -603,7 +628,8 @@ public class PvZ {
     // LOCATIONS //
     /**
      * Controls if a plant tile is occupied by a plant
-     *
+     * @param x Row
+     * @param y Column
      */
     public static boolean isTileOccupied(int x, int y){
         for(Plant p : plants){
@@ -613,7 +639,10 @@ public class PvZ {
         }
         return false;
     }
-
+    /**
+     * Controls when planting prompt should actually appear (work in progress)
+     *
+     */
     public static boolean shouldShowPlantingPrompt(){
         return ((currentTime >= 30 && currentTime <= 80 && currentTime % 10 == 0) ||
                 (currentTime >= 80 && currentTime <= 140 && currentTime % 5 == 0) ||
