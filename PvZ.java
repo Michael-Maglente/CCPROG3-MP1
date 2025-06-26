@@ -140,7 +140,7 @@ public class PvZ {
                 lawn[p.getX()][p.getY()] = "P";
             }
             else if(p instanceof Sunflower){
-                lawn[p.getX()][p.getY()] = "SF";
+                lawn[p.getX()][p.getY()] = "S";
             }
         }
         // adding zombies (may override when plant is eaten //
@@ -180,7 +180,7 @@ public class PvZ {
         for(i = 0; i < ROWS; i++){
             laneZombies.add(new ArrayList<>());
         }
-        lastPlantedTime.put("SF", -999.0); // For cooldown //
+        lastPlantedTime.put("S", -999.0); // For cooldown //
         lastPlantedTime.put("P", -999.0); // For cooldown //
     }
     // SUN PRODUCTION //
@@ -212,8 +212,8 @@ public class PvZ {
             else{
                 System.out.println("Skipped collecting sun.");
             }
-        }else if(sunDrops < 0){
-            System.out.println("No sun to collect. Try again later.");
+        } else {
+            System.out.println("No sun to collect.");
         }
     }
     /**
@@ -247,7 +247,7 @@ public class PvZ {
                 }
                 System.out.println();
             }
-            System.out.println("Do you want to use: [S] Shovel, [SF] Sunflower, [P] Peashooter to the board, or skip.");
+            System.out.println("Do you want to use: [X] Shovel, [S] Sunflower, [P] Peashooter to the board, or skip.");
             String plant = scanner.nextLine().trim().toLowerCase();
 
             if(plant.equalsIgnoreCase("skip")){
@@ -260,7 +260,7 @@ public class PvZ {
             int y = Integer.parseInt(scanner.nextLine());
 
             // Shovel use //
-            if(plant.equalsIgnoreCase("S")){
+            if(plant.equalsIgnoreCase("X")){
                     plants.removeIf(p -> p.getX() == x && p.getY() == y);
                     System.out.println("Plant at Row " + x + ", Column " + y + " has been removed.");
             }
@@ -272,21 +272,21 @@ public class PvZ {
             }
 
             // Sunflower placement //
-            if (plant.equalsIgnoreCase("SF")) {
+            if (plant.equalsIgnoreCase("S")) {
                 Sunflower sf = new Sunflower(x, y, currentTime);
                 boolean canPlant = sun >= sf.getCost();
-                boolean cooldownLoad = (currentTime - lastPlantedTime.get("SF")) >= sf.getRegenerateRate();
+                boolean cooldownLoad = (currentTime - lastPlantedTime.get("S")) >= sf.getRegenerateRate();
                 if (canPlant && cooldownLoad) {
                     plants.add(sf);
                     sun -= sf.getCost();
-                    lastPlantedTime.put("SF", (double) currentTime);
+                    lastPlantedTime.put("S", (double) currentTime);
                     System.out.println("The Sunflower (" + sf.getHealth() + " HP)" + " has been planted at Row " + x + ", Column " + y);
                 } else {
-                    System.out.println("Can't plant Sunflower (");
+                    System.out.print("Can't plant Sunflower ( ");
                     if(!canPlant) System.out.print("not enough sun");
                     if(!canPlant && !cooldownLoad) System.out.print(" and ");
                     if(!cooldownLoad) System.out.print("still on cooldown");
-                    System.out.println(").");
+                    System.out.print(").");
                 }
             } else if (plant.equalsIgnoreCase("P")) {
                 Peashooter ps = new Peashooter(x, y);
@@ -310,14 +310,14 @@ public class PvZ {
      * Controls the display of plant cooldowns when dealing with plant placement
      */
     public static void plantCooldowns(){
-        double sfCooldown = Math.max(0, lastPlantedTime.get("SF")) + new Sunflower(0,0, currentTime).getRegenerateRate() - currentTime;
+        double sfCooldown = Math.max(0, lastPlantedTime.get("S")) + new Sunflower(0,0, currentTime).getRegenerateRate() - currentTime;
         double pCooldown = Math.max(0, lastPlantedTime.get("P")) + new Peashooter(0,0).getRegenerateRate() - currentTime;
         System.out.println("Plant Cooldowns: ");
 
         if(sfCooldown > 0){
-            System.out.printf("   - [SF] Sunflower: %.1f s\n",sfCooldown);
+            System.out.printf("   - [S] Sunflower: %.1f s\n",sfCooldown);
         } else{
-            System.out.println("   - [SF] Sunflower: Ready");
+            System.out.println("   - [S] Sunflower: Ready");
         }
         if(pCooldown > 0){
             System.out.printf("   - [P] Peashooter: %.1f s\n", pCooldown);
@@ -499,7 +499,7 @@ public class PvZ {
             int i;
 
             for (i = 0; i < spawnCount; i++) {
-                int lane = random.nextInt(ROWS);
+                int lane = 1 + random.nextInt(ROWS - 1);
                 Zombie newZombie = new Zombie(lane, COLS - 1, currentTime);
 
                 // Overcrowding prevention //
