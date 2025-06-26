@@ -1,20 +1,15 @@
 import java.util.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.lang.Thread;
+
 public class PvZ {
     // CONSTANTS //
     public static final int ROWS = 6;
     public static final int COLS = 10;
     public static final int TIME_LIMIT = 180;
-    public static final Object lock = new Object();
-
 
     // State of the game //
     public static int sun = 50;
     public static int currentTime = 0;
     public static int sunDrops = 0;
-    public static boolean showPlantPlacementPrompt = true;
 
     public static Scanner scanner = new Scanner(System.in);
     public static Random random = new Random(); // for zombie location control //
@@ -40,18 +35,9 @@ public class PvZ {
         System.out.println("READY...SET...PLANT!");
         System.out.println("Duration: 03:00 | Current Sun: " + sun);
 
-        Thread gameLoopThread = new Thread(new GameLoop());
-        Thread inputThread = new Thread(new InputHandler());
-
-        gameLoopThread.start();
-        inputThread.start();
-
-        gameLoopThread.join();
-        inputThread.interrupt();
-
         System.out.println("Game over! Plants win!");
-       // while (currentTime <= TIME_LIMIT) {
-            /*
+        while (currentTime <= TIME_LIMIT) {
+
             System.out.println("\nTime: " + timeFormat(currentTime));
             System.out.println("Current Sun: " + sun);
 
@@ -74,11 +60,8 @@ public class PvZ {
             // movePeas();
 
             // PLANTING WINDOW LOGIC //
-            if ((currentTime % 10 > 0 && currentTime % 10 < 10 && currentTime > 30 && currentTime < 80) ||
-                    (currentTime % 5 >= 0 && currentTime % 5 <= 5 && currentTime > 81 && currentTime < 140) ||
-                    (currentTime % 3 >= 0 && currentTime % 3 <= 3 && currentTime > 141 && currentTime < 170) ||
-                    (currentTime > 171 && currentTime < 180)) {
-                plantPlacementPrompt();
+            if (shouldShowPlantingPrompt()) {
+                plantPlacementPrompt(scanner);
             }
 
             // PLANT PLACEMENT AND REMOVAL //
@@ -86,8 +69,7 @@ public class PvZ {
 
             currentTime++;
             Thread.sleep(1000);
-           */
-        // }
+       }
     }
 
     // LAWN DISPLAY //
@@ -295,7 +277,7 @@ public class PvZ {
         System.out.println("Plant Cooldowns: ");
 
         if(sfCooldown > 0){
-            System.out.printf("   - [SF] Sunflower: %.1f s\n", sfCooldown);
+            System.out.printf("   - [SF] Sunflower (%02d HP): %.1f s\n",sfCooldown);
         } else{
             System.out.println("   - [SF] Sunflower: Ready");
         }
@@ -548,7 +530,7 @@ public class PvZ {
                 (currentTime > 171 && currentTime < 180));
     }
 
-    public static void gameTick(){
+    /* public static void gameTick(){
         System.out.println("\nTime: " + timeFormat(currentTime));
         System.out.println("Current Sun: " + sun);
 
@@ -559,8 +541,15 @@ public class PvZ {
         // SUN PRODUCTION //
         sunDropFromSky();
         produceSunFromSunflower();
-        collectSun();
 
+        while (!commandQueue.isEmpty()){
+            String command = commandQueue.poll();
+            switch (command){
+                case "A" -> plantPlacementPrompt(scanner);
+                case "C" -> collectSun();
+                default -> System.out.println("Invalid command.");
+            }
+        }
         // ZOMBIE LOGIC //
         // zombieSpawn();
         // moveZombies();
@@ -572,20 +561,6 @@ public class PvZ {
 
         // PLANT PLACEMENT AND REMOVAL //
         // deadPlantsAndZombies(); //
-    }
-
-    public static void handleInput(Scanner scanner){
-        System.out.println("ACTION MENU: ");
-        System.out.println("[A] Add Plant ");
-        System.out.println("[C] Collect Sun");
-        System.out.print("Choose an option: ");
-        String input = scanner.nextLine().trim().toUpperCase();
-
-        switch(input){
-            case "A": plantPlacementPrompt(scanner); break;
-            case "C": collectSun(); break;
-            default: break;
-        }
     }
     /*
         Sources:
