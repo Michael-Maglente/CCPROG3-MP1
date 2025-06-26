@@ -11,14 +11,14 @@ public class Zombie {
     private boolean attacking;
     /**
      * This creates a Zombie
-     * @param x Which row Peashooter is located
-     * @param y Which column Peashooter is located
+     * @param x Which row Zombie is located
+     * @param y Which column Zombie is located
      * @param currentTime time when Zombie is spawned
      */
     Zombie(int x, int y, int currentTime){
-        this.health = 200;
-        this.damage = 50;
-        this.speed = 5;
+        this.health = 70;
+        this.damage = 10;
+        this.speed = 4;
         this.x = x;
         this.y = y;
         this.lastMoveTime = currentTime; // last time a zombie moved //

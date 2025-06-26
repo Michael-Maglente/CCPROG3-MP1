@@ -3,7 +3,6 @@
  */
 public class Sunflower extends Plant{
     private final int amountSun;
-    private final int sunProductionInterval;
     private int lastProdTime; // last time a sunflower was planted
     /**
      * This creates a Sunflower
@@ -14,13 +13,12 @@ public class Sunflower extends Plant{
     Sunflower(int x, int y, int currentTime){
         super(x, y);
         this.cost = 50;
-        this.health = 300;
+        this.health = 60;
         this.regenerateRate = 7.5;
         this.damage = 0;
         this.directDamage = 0;
         this.range = 0;
-
-        this.sunProductionInterval = 24;
+        this.speed = 24;
         this.amountSun = 25;
         this.lastProdTime = currentTime;
     }
@@ -29,7 +27,7 @@ public class Sunflower extends Plant{
      * @param currentTime Current time at the moment
      */
     public boolean canProduceSun(int currentTime){
-        return (currentTime - lastProdTime) >= sunProductionInterval;
+        return (currentTime - lastProdTime) >= speed;
     }
     /**
      * This lets the Sunflower produce the sun
@@ -49,8 +47,8 @@ public class Sunflower extends Plant{
      * This gets how long it takes for the Sunflower to produce the sun
      *  @return the interval for sun production of Sunflower
      */
-    public int getSunProductionInterval() {
-        return sunProductionInterval;
+    public double getSpeed() {
+        return speed;
     }
     /**
      * This gets the timestamp of when the Sunflower was planted last.
