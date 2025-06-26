@@ -34,8 +34,7 @@ public class PvZ {
         laneInitialized();
         System.out.println("READY...SET...PLANT!");
         System.out.println("Duration: 03:00 | Current Sun: " + sun);
-
-        System.out.println("Game over! Plants win!");
+        
         while (currentTime <= TIME_LIMIT) {
 
             System.out.println("\nTime: " + timeFormat(currentTime));
@@ -70,6 +69,7 @@ public class PvZ {
             currentTime++;
             Thread.sleep(1000);
        }
+        System.out.println("Game over! Plants win!");
     }
 
     // LAWN DISPLAY //
@@ -528,39 +528,6 @@ public class PvZ {
                 (currentTime % 5 >= 0 && currentTime % 5 <= 5 && currentTime > 81 && currentTime < 140) ||
                 (currentTime % 3 >= 0 && currentTime % 3 <= 3 && currentTime > 141 && currentTime < 170) ||
                 (currentTime > 171 && currentTime < 180));
-    }
-
-    /* public static void gameTick(){
-        System.out.println("\nTime: " + timeFormat(currentTime));
-        System.out.println("Current Sun: " + sun);
-
-        // LAWN WORK //
-        changeLawn();
-        displayLawn();
-
-        // SUN PRODUCTION //
-        sunDropFromSky();
-        produceSunFromSunflower();
-
-        while (!commandQueue.isEmpty()){
-            String command = commandQueue.poll();
-            switch (command){
-                case "A" -> plantPlacementPrompt(scanner);
-                case "C" -> collectSun();
-                default -> System.out.println("Invalid command.");
-            }
-        }
-        // ZOMBIE LOGIC //
-        // zombieSpawn();
-        // moveZombies();
-        // plantVsZombie();
-
-        // PLANT ATTACK LOGIC //
-        // peashooterShoot();
-        // movePeas();
-
-        // PLANT PLACEMENT AND REMOVAL //
-        // deadPlantsAndZombies(); //
     }
     /*
         Sources:
