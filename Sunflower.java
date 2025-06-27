@@ -3,7 +3,11 @@
  */
 public class Sunflower extends Plant{
     private final int amountSun;
-    private int lastProdTime; // last time a sunflower was planted
+    private int lastProdTime; // the last time a sunflower produced a sun
+    private boolean isFirstCycle;
+    private final int INITIAL_DELAY = 7;
+    private final int REPEAT_DELAY = 24;
+
     /**
      * This creates a Sunflower
      * @param x Which row Sunflower is located
@@ -18,16 +22,17 @@ public class Sunflower extends Plant{
         this.damage = 0;
         this.directDamage = 0;
         this.range = 0;
-        this.speed = 24;
         this.amountSun = 25;
         this.lastProdTime = currentTime;
+        this.isFirstCycle = true;
     }
     /**
      * This checks if the Sunflower can produce sun
      * @param currentTime Current time at the moment
      */
     public boolean canProduceSun(int currentTime){
-        return (currentTime - lastProdTime) >= speed;
+        int delay = isFirstCycle ? INITIAL_DELAY : REPEAT_DELAY;
+        return (currentTime - lastProdTime) >= delay;
     }
     /**
      * This lets the Sunflower produce the sun
@@ -35,6 +40,7 @@ public class Sunflower extends Plant{
      */
     public void produceSun(int currentTime){
         lastProdTime = currentTime;
+        isFirstCycle = false; // After first production
     }
     /**
      * This gets the amount of sun that the Sunflower produces
@@ -64,4 +70,17 @@ public class Sunflower extends Plant{
     public void setLastProdTime(int time){
         this.lastProdTime = time;
     }
+
+    public boolean isFirstCycle(){
+        return isFirstCycle;
+    }
+
+    public int getINITIAL_DELAY(){
+        return INITIAL_DELAY;
+    }
+
+    public int getREPEAT_DELAY(){
+        return REPEAT_DELAY;
+    }
+
 }
