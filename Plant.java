@@ -61,42 +61,38 @@ public abstract class Plant {
      * This gets how much damage a plant can deal at a closer range
      * @return how much damage a plant causes to a zombie at a closer range
      */
-    public int getDirectDamage(){
+    public int getDirectDamage()
+    {
         return directDamage;
     }
-    /**
-     * This gets the attack speed of a plant
-     * @return how fast the next attack of a plant will be
-     */
-    public double getSpeed(){
+
+    // This gets the attack speed of a plant. @return how fast the next attack of a plant will be
+    public double getSpeed()
+    {
         return speed;
     }
-    /**
-     * This gets the attack range of a plant
-     * @return how far the attack reaches
-     */
-    public int getRange() {
+
+    // This gets the attack range of a plant. @return how far the attack reaches
+    public int getRange() 
+    {
         return range;
     }
-    /**
-     * This gets the regenerate rate of a plant
-     * @return how much time a plant needs to regenerate (when will it be ready to be planted again?)
-     */
-    public double getRegenerateRate() {
+
+    // This gets the regenerate rate of a plant. @return how much time a plant needs to regenerate (when will it be ready to be planted again?)
+    public double getRegenerateRate()
+    {
         return regenerateRate;
     }
-    /**
-     * This gets the x-coordinate / row index of a plant
-     * @return x-coordinate / row index
-     */
-    public int getX() {
+
+    // This gets the x-coordinate / row index of a plant. @return x-coordinate / row index
+    public int getX() 
+    {
         return x;
     }
-    /**
-     * This gets the y-coordinate / column index of a plant
-     * @return y-coordinate / column index
-     */
-    public int getY() {
+
+    // This gets the y-coordinate / column index of a plant. @return y-coordinate / column index
+    public int getY() 
+    {
         return y;
     }
 }
