@@ -10,54 +10,85 @@ import java.util.*;
  *  6. Lawn state display and action prompting.
  */
 public class PvZ {
-    /** Number of playable rows*/
+    /**
+     * Number of playable rows
+     */
     public static final int ROWS = 6;
-    /** Number of playable columns*/
+    /**
+     * Number of playable columns
+     */
     public static final int COLS = 10;
-    /** Time limit of entire game */
+    /**
+     * Time limit of entire game
+     */
     public static final int TIME_LIMIT = 180;
 
     // State of the game //
-    /** Sun available for player */
+    /**
+     * Sun available for player
+     */
     public static int sun = 50;
-    /** Game time in seconds */
+    /**
+     * Game time in seconds
+     */
     public static int currentTime = 0;
-    /** Uncollected sun as it falls from the sky */
+    /**
+     * Uncollected sun as it falls from the sky
+     */
     public static int sunDrops = 0;
-    /** State of entire game running */
+    /**
+     * State of entire game running
+     */
     public static boolean gameRunning = true;
 
-    /** Scanner object for handling input of user*/
+    /**
+     * Scanner object for handling input of user
+     */
     public static Scanner scanner = new Scanner(System.in);
-    /** Random object for zombie placement*/
+    /**
+     * Random object for zombie placement
+     */
     public static Random random = new Random(); // for zombie location control //
-    /** List of plants placed by the player */
+    /**
+     * List of plants placed by the player
+     */
     public static List<Plant> plants = new ArrayList<>(); // where plants are stored now //
-    /** List of zombies in each row/lane */
+    /**
+     * List of zombies in each row/lane
+     */
     public static List<List<Zombie>> laneZombies = new ArrayList<>();
-    /** Queue of peas (projectiles) on the lawn */
-    public static List<int []> peas = new ArrayList<>();
-    /** 2D grid representing the lawn */
+    /**
+     * Queue of peas (projectiles) on the lawn
+     */
+    public static List<int[]> peas = new ArrayList<>();
+    /**
+     * 2D grid representing the lawn
+     */
     public static String[][] lawn = new String[ROWS][COLS];
 
-    /** Last planted timestamps for cooldown tracking */
+    /**
+     * Last planted timestamps for cooldown tracking
+     */
     public static Map<String, Double> lastPlantedTime = new HashMap<>();
+
     /**
      * Displays the time format of the game (MM:SS)
-     * */
-    public static String timeFormat(int t){
+     */
+    public static String timeFormat(int t) {
         return String.format("%02d:%02d", t / 60, t % 60);
     }
+
     /**
      * The main method of the game, which starts and runs the game for 3 minutes
      * Initializes game state, loops every second, and performs timed events
+     *
      * @param args command-line arguments (not used)
-     * */
-    public static void main(String[] args) throws InterruptedException{
+     */
+    public static void main(String[] args) throws InterruptedException {
         // LANE INITIALIZATION //
         laneInitialized();
         // MENU //
-        do{
+        do {
             System.out.println("=== Welcome to Plants Vs Zombies ===");
             System.out.println("1 - Play");
             System.out.println("2 - Exit");
@@ -65,7 +96,7 @@ public class PvZ {
             int selection = scanner.nextInt();
             scanner.nextLine();
 
-            switch(selection){
+            switch (selection) {
                 case 1:
                     // GAME LOOP //
                     System.out.println("\n---------------------------------");
@@ -80,18 +111,21 @@ public class PvZ {
                         changeLawn();
                         displayLawn();
 
-                        Sunflower sf = new Sunflower(0,0,currentTime);
-                        Peashooter ps = new Peashooter(0,0);
+                        Sunflower sf = new Sunflower(0, 0, currentTime);
+                        Peashooter ps = new Peashooter(0, 0);
 
-                        double sfCooldown = Math.max(0, new Sunflower(0,0, currentTime).getRegenerateRate() - ( currentTime - lastPlantedTime.get("S")));
-                        double pCooldown = Math.max(0, new Peashooter(0,0).getRegenerateRate() - (currentTime - lastPlantedTime.get("P")));
+                        double sfCooldown = Math.max(0, new Sunflower(0, 0, currentTime).getRegenerateRate() - (currentTime - lastPlantedTime.get("S")));
+                        double pCooldown = Math.max(0, new Peashooter(0, 0).getRegenerateRate() - (currentTime - lastPlantedTime.get("P")));
 
                         displayShop(sun, sf.getCost(), ps.getCost(), sfCooldown, pCooldown);
                         // SUN PRODUCTION //
                         sunDropFromSky();
                         produceSunFromSunflower();
                         collectSun();
-
+                        // PLANTING WINDOW LOGIC //
+                        if (shouldShowPlantingPrompt()) {
+                            plantPlacementPrompt();
+                        }
                         // ZOMBIE LOGIC //
                         zombieSpawn();
                         moveZombies();
@@ -100,10 +134,7 @@ public class PvZ {
                         // PLANT ATTACK LOGIC //
                         peashooterShoot();
                         movePeas();
-                        // PLANTING WINDOW LOGIC //
-                        if(shouldShowPlantingPrompt()) {
-                            plantPlacementPrompt();
-                        }
+
                         // PLANT PLACEMENT AND REMOVAL //
                         deadPlantsAndZombies(); //
 
@@ -121,7 +152,7 @@ public class PvZ {
                 default:
                     System.out.println("Invalid option! Try again...");
             }
-        } while(gameRunning);
+        } while (gameRunning);
         scanner.close();
     }
 
@@ -130,23 +161,23 @@ public class PvZ {
         int i, j;
         System.out.println();
         System.out.print("        ");
-        for(j = 1; j < COLS; j++){
+        for (j = 1; j < COLS; j++) {
             System.out.printf("  %2d  ", j);
         }
         System.out.println();
 
-        for(i = 1; i < ROWS; i++){
+        for (i = 1; i < ROWS; i++) {
             System.out.print("        ");
-            for(j = 1; j < COLS; j++){
+            for (j = 1; j < COLS; j++) {
                 System.out.print("*-----");
             }
             System.out.println("*");
             // CONTENT ROW //
             System.out.printf("Row %-2d  ", i);
-            for(j = 1; j < COLS; j++){
-                if(lawn[i][j] == null || lawn[i][j].isBlank()){
+            for (j = 1; j < COLS; j++) {
+                if (lawn[i][j] == null || lawn[i][j].isBlank()) {
                     System.out.print("|     ");
-                } else{
+                } else {
                     System.out.printf("| %-2s  ", lawn[i][j]);
                 }
             }
@@ -154,45 +185,44 @@ public class PvZ {
         }
 
         System.out.print("        ");
-        for(j = 1; j < COLS; j++){
+        for (j = 1; j < COLS; j++) {
             System.out.print("*-----");
         }
         System.out.println("*");
     }
-    public static void changeLawn(){
+
+    public static void changeLawn() {
         int i, j;
-        for(i = 1; i < ROWS; i++){ // clear lawn for update //
-            for(j = 1; j < COLS; j++){
+        for (i = 1; i < ROWS; i++) { // clear lawn for update //
+            for (j = 1; j < COLS; j++) {
                 lawn[i][j] = " ";
             }
         }
         // adding peashooters //
-        for(Plant p : plants){
-            if(p instanceof Peashooter){
+        for (Plant p : plants) {
+            if (p instanceof Peashooter) {
                 lawn[p.getX()][p.getY()] = "P";
-            }
-            else if(p instanceof Sunflower){
+            } else if (p instanceof Sunflower) {
                 lawn[p.getX()][p.getY()] = "S";
             }
         }
         // adding zombies (may override when plant is eaten //
-        for(i = 1; i < ROWS; i++){
-            for(Zombie z : laneZombies.get(i)){
-                if(lawn[i][z.getY()].equals(" ")){
+        for (i = 1; i < ROWS; i++) {
+            for (Zombie z : laneZombies.get(i)) {
+                if (lawn[i][z.getY()].equals(" ")) {
                     lawn[i][z.getY()] = "Z";
-                }
-                else{
+                } else {
                     lawn[i][z.getY()] += "Z";
                 }
             }
         }
         // for peas //
-        for(int [] pea : peas){
+        for (int[] pea : peas) {
             int x = pea[0], y = pea[1];
-            if(y < COLS){
-                if(lawn[x][y].equals(" ")){
+            if (y < COLS) {
+                if (lawn[x][y].equals(" ")) {
                     lawn[x][y] = "O";
-                } else{
+                } else {
                     lawn[x][y] += "O";
                 }
             }
@@ -201,15 +231,15 @@ public class PvZ {
     }
 
     // LANE INITIALIZATION //
+
     /**
      * This method controls how the lanes are supposed to be initialized, essentially
      * preparing the zombies for attack to the house
-     *
      */
-    public static void laneInitialized(){
+    public static void laneInitialized() {
         // There should be list of zombies prepared in each 5 lanes //
         int i;
-        for(i = 0; i < ROWS; i++){
+        for (i = 0; i < ROWS; i++) {
             laneZombies.add(new ArrayList<>());
         }
         lastPlantedTime.put("S", -999.0); // Allow immediate planting of Sunflower //
@@ -219,22 +249,21 @@ public class PvZ {
     /**
      * Controls the display of plant cooldowns when dealing with plant placement
      */
-    public static void displayShop(int sun, int sfCost, int psCost, double sfCooldown, double pCooldown){
+    public static void displayShop(int sun, int sfCost, int psCost, double sfCooldown, double pCooldown) {
         System.out.println("===== SHOP =====");
         System.out.println("Sun Available: " + sun);
 
 
-
         System.out.printf("[S] Sunflower: (%d)", sfCost);
-        if(sfCooldown > 0){
-            System.out.printf(" (COOLDOWN: %.1f s)\n",sfCooldown);
-        } else{
+        if (sfCooldown > 0) {
+            System.out.printf(" (COOLDOWN: %.1f s)\n", sfCooldown);
+        } else {
             System.out.println(" (Ready)");
         }
         System.out.printf("[P] Peashooter: (%d)", psCost);
-        if(pCooldown > 0){
-            System.out.printf(" (COOLDOWN: %.1f s)\n",pCooldown);
-        } else{
+        if (pCooldown > 0) {
+            System.out.printf(" (COOLDOWN: %.1f s)\n", pCooldown);
+        } else {
             System.out.println(" (Ready)");
         }
     }
@@ -242,29 +271,27 @@ public class PvZ {
 
     /**
      * Controls how the sun is supposed to drop from the sky
-     *
      */
-    public static void sunDropFromSky(){
-        if(currentTime != 0 && currentTime % 8 == 0){
+    public static void sunDropFromSky() {
+        if (currentTime != 0 && currentTime % 8 == 0) {
             sunDrops++;
             System.out.println(" Sun has dropped from the sky!");
         }
     }
+
     /**
      * Controls how the sun is supposed to be collected when dropped from the sky
-     *
      */
-    public static void collectSun(){
-        if(sunDrops > 0){
+    public static void collectSun() {
+        if (sunDrops > 0) {
             System.out.print(" You have " + sunDrops + " uncollected sun(s). Collect now (yes/no)");
             String decision = scanner.nextLine().trim().toLowerCase();
-            if(decision.equals("yes")){
+            if (decision.equals("yes")) {
                 int gained = sunDrops * 25;
                 sun += gained;
                 sunDrops = 0;
                 System.out.println("Collected " + gained + " sun. " + " Total Sun: " + sun);
-            }
-            else{
+            } else {
                 System.out.println("Skipped collecting sun.");
             }
         } else {
@@ -272,32 +299,32 @@ public class PvZ {
             System.out.println("No sun to collect.");
         }
     }
+
     /**
      * Controls how the Sunflower produces sun for placing plants
-     *
      */
-    public static void produceSunFromSunflower(){
-        for(Plant p : plants){
-            if(p instanceof Sunflower){
+    public static void produceSunFromSunflower() {
+        for (Plant p : plants) {
+            if (p instanceof Sunflower) {
                 Sunflower sf = (Sunflower) p;
-                if(sf.canProduceSun(currentTime)){
+                if (sf.canProduceSun(currentTime)) {
                     sun += sf.getSunAmount();
                     sf.produceSun(currentTime);
-                    System.out.println("Sunflower at Row " + p.getX() + ", Column " + p.getY() + " produced " + sf.getSunAmount() + " sun.");
+                    System.out.printf("Sunflower at Row %d, Column %d produced %d sun (Total: %d)\n", sf.getX(), sf.getY(), sf.getSunAmount(), sun);
                 }
             }
         }
     }
+
     /**
      * Controls how the user places the plants in the tiles of the lawn to defend the house.
-     *
      */
     // PLANT PLACEMENT //
-    public static void plantPlacementPrompt(){
-        while(sun >= 50){
-            if(!plants.isEmpty()){
+    public static void plantPlacementPrompt() {
+        while (sun >= 50) {
+            if (!plants.isEmpty()) {
                 System.out.println("\nPlants on Lawn: ");
-                for(Plant p : plants){
+                for (Plant p : plants) {
                     String type = (p instanceof Sunflower) ? "Sunflower" : (p instanceof Peashooter) ? "Peashooter" : "Plant";
                     System.out.println("- " + type + " at Row " + p.getX() + ", Column " + p.getY() + " (" + p.getHealth() + " HP)");
                 }
@@ -315,7 +342,7 @@ public class PvZ {
                 }
             }
 
-            if(plant.equalsIgnoreCase("skip")){
+            if (plant.equalsIgnoreCase("skip")) {
                 System.out.println("Skipping turn.");
                 return;
             }
@@ -326,13 +353,13 @@ public class PvZ {
             int y = Integer.parseInt(scanner.nextLine());
 
             // Shovel use //
-            if(plant.equalsIgnoreCase("X")){
+            if (plant.equalsIgnoreCase("X")) {
                 plants.removeIf(p -> p.getX() == x && p.getY() == y);
                 System.out.println("Plant at Row " + x + ", Column " + y + " has been removed.");
             }
 
             // If tile is already occupied by plants //
-            if(isTileOccupied(x, y)){
+            if (isTileOccupied(x, y)) {
                 System.out.println("Tile already occupied!");
                 return;
             }
@@ -349,9 +376,9 @@ public class PvZ {
                     System.out.println("The Sunflower (" + sf.getHealth() + " HP)" + " has been planted at Row " + x + ", Column " + y);
                 } else {
                     System.out.print("Can't plant Sunflower ( ");
-                    if(!canPlant) System.out.print("not enough sun");
-                    if(!canPlant && !cooldownLoad) System.out.print(" and ");
-                    if(!cooldownLoad) System.out.print("still on cooldown");
+                    if (!canPlant) System.out.print("not enough sun");
+                    if (!canPlant && !cooldownLoad) System.out.print(" and ");
+                    if (!cooldownLoad) System.out.print("still on cooldown");
                     System.out.print(").");
                 }
             } else if (plant.equalsIgnoreCase("P")) {
@@ -365,110 +392,98 @@ public class PvZ {
                     System.out.println("The Peashooter (" + ps.getHealth() + " HP)" + " has been planted at Row " + x + ", Column " + y);
                 } else {
                     System.out.print("Can't plant Peashooter ( ");
-                    if(!canPlant) System.out.print("not enough sun");
-                    if(!canPlant && !cooldownLoad) System.out.print(" and ");
-                    if(!cooldownLoad) System.out.println("still on cooldown");
+                    if (!canPlant) System.out.print("not enough sun");
+                    if (!canPlant && !cooldownLoad) System.out.print(" and ");
+                    if (!cooldownLoad) System.out.println("still on cooldown");
                     System.out.println(").");
                 }
             }
         }
     }
     // PLANT ATTACK //
+
     /**
      * Controls how the Peashooters are going to attack the zombies
-     *
      */
-    public static void peashooterShoot(){
-        for(Plant plant : plants){
-            if(plant instanceof Peashooter){
+    public static void peashooterShoot() {
+        for (Plant plant : plants) {
+            if (plant instanceof Peashooter) {
                 Peashooter ps = (Peashooter) plant;
-                List<Zombie> zombiesInLanes = laneZombies.get(ps.getX());
 
+                if (!ps.canShootPea(currentTime)) continue;
+
+                List<Zombie> zombiesInLanes = laneZombies.get(ps.getX());
                 Zombie enemy = null;
 
-               for(Zombie z : zombiesInLanes){
-                   double distance = z.getY() - ps.getY();
-                   if(distance >= 0 && distance <= ps.getRange()){
-                       if(enemy == null  || z.getY() < enemy.getY()){
-                           enemy = z;
-                       }
-                   }
-               }
+                for (Zombie z : zombiesInLanes) {
+                    double distance = z.getY() - ps.getY();
+                    if (distance >= 0 && distance <= ps.getRange() && !z.isDead()) {
+                        if (enemy == null || z.getY() < enemy.getY()) {
+                            enemy = z;
+                        }
+                    }
+                }
 
-               if(enemy != null){
-                   System.out.printf(" Target found at Column %2d\n", enemy.getY());
-                   System.out.printf("Cooldown check: currentTime = %2d, lastShot = %.2f, canShoot = %b\n", currentTime, ps.getLastShot(),
-                           ps.canShootPea(currentTime));
-
-                   if(ps.canShootPea(currentTime)){
-                       peas.add(new int[]{ps.getX(), ps.getY(), ps.getDamage()});
-                       ps.updateShootPeaTime(currentTime);
-                       System.out.println("Peashooter at Row " + ps.getX() + ", Column " + ps.getY() + " fired a pea!");
-                   }
-               } else {
-                   System.out.println("No target in range.");
-               }
+                if (enemy != null) {
+                    ps.updateShootPeaTime(currentTime);
+                    peas.add(new int[]{ps.getX(), ps.getY(), ps.getDamage()});
+                    System.out.println("Peashooter at Row " + ps.getX() + ", Column " + ps.getY() + " fired a pea!");
+                }
             }
         }
     }
+
     /**
      * Controls how the peas of the Peashooter shoot the zombies (projectile)
-     *
      */
-    public static void movePeas()
-    {
-        List<int[]> toRemove = new ArrayList<>(); // List to track peas to remove
+    public static void movePeas() {
+        List<int[]> toRemove = new ArrayList<>();
 
-        for(int[] pea : peas)
-        {
-            pea[1]++;          // move to the right
+        for (int[] pea : peas) {
+            pea[1]++; // move pea forward by 1 column
 
-            if(pea[1] >= COLS) // if the pea goes out of bounds
-            {
-                toRemove.add(pea);
-                continue; // skip to the next pea
+            if (pea[1] >= COLS) {
+                toRemove.add(pea); // pea out of bounds
+                continue;
             }
 
-            // Check collision with zombie //
-            List<Zombie> lane  = laneZombies.get(pea[0]);
+            List<Zombie> lane = laneZombies.get(pea[0]);
             Iterator<Zombie> it = lane.iterator();
 
             boolean hit = false;
-            while(it.hasNext()) {
-                Zombie z = it.next();
-                if(Math.abs(z.getY() - pea[1]) <= 0.5){
-                    z.loseHP(pea[2]);
-                    System.out.printf("Pea hit Zombie at (%d, %d), -%d HP. Remaining HP: %d\n", pea[0], z.getY(), pea[2], z.getHealth());
 
-                    if(z.isDead()){
-                        System.out.println("Zombie at Row " + pea[0] + ", Column " + z.getY() + " died.");
+            while (it.hasNext()) {
+                Zombie z = it.next();
+
+                // Check for collision (allowing for smooth movement if using double y)
+                if (Math.abs(z.getY() - pea[1]) <= 0.5 && !z.isDead()) {
+                    z.loseHP(pea[2]);
+
+                    System.out.printf("Pea hit Zombie at (%d, %.2f), -%d HP. Remaining HP: %d\n",
+                            z.getX(), (double)z.getY(), pea[2], z.getHealth());
+
+                    if (z.isDead()) {
+                        System.out.printf("Zombie at (%d, %.2f) died.\n", z.getX(), (double)z.getY());
                         it.remove();
                     }
 
-                    toRemove.add(pea);
+                    toRemove.add(pea); // pea hits one zombie, then disappears
                     hit = true;
-                    break; // pea hit, stop checking //
+                    break;
                 }
             }
-
-            if(!hit){
-                // Only move if not hit //
-                pea[1]++;
-                if(pea[1] >= COLS){
-                    toRemove.add(pea);
-                }
+            if(!hit && pea[1] >= COLS){
+                toRemove.add(pea); // just in case it reaches the end
             }
         }
-
-        peas.removeAll(toRemove);
+        peas.removeAll(toRemove); // remove all peas that hit or went out
     }
-
     // ZOMBIE LOGIC //
+
     /**
      * Controls the spawn logic of the zombies and how they are going to spawn per interval
-     *
      */
-    public static void zombieSpawn(){
+    public static void zombieSpawn() {
         /*
         if(currentTime >= 30 && currentTime <= 80 && currentTime % 10 == 0)
         {
@@ -566,19 +581,19 @@ public class PvZ {
         int spawnInterval = 0; // no. of seconds, it takes zombies to spawn
         int spawnCount = 1; // no. of zombies to spawn
 
-        if(currentTime >= 30 && currentTime <= 80 && currentTime % 10 == 0){
+        if (currentTime >= 30 && currentTime <= 80 && currentTime % 10 == 0) {
             spawnInterval = 10;
-        } else if(currentTime >= 81 && currentTime <= 140 && currentTime % 5 == 0){
+        } else if (currentTime >= 81 && currentTime <= 140 && currentTime % 5 == 0) {
             spawnInterval = 5;
-        } else if(currentTime >= 141 && currentTime <= 170 && currentTime % 3 == 0){
+        } else if (currentTime >= 141 && currentTime <= 170 && currentTime % 3 == 0) {
             spawnInterval = 3;
-        } else if (currentTime >= 171 && currentTime <= 180){
+        } else if (currentTime >= 171 && currentTime <= 180) {
             System.out.println("A huge wave of zombies is approaching!");
             spawnCount = 5;
             spawnInterval = 1;
         }
 
-        if(spawnInterval > 0) {
+        if (spawnInterval > 0) {
             int i;
 
             for (i = 0; i < spawnCount; i++) {
@@ -607,11 +622,10 @@ public class PvZ {
 
     /**
      * Controls how the zombies move towards the house
-     *
      */
-    public static void moveZombies(){
+    public static void moveZombies() {
         int x;
-        for(x = 1; x < ROWS; x++){
+        for (x = 1; x < ROWS; x++) {
             List<Zombie> zombiesInLanes = laneZombies.get(x);
 
             for (Zombie z : zombiesInLanes) {
@@ -627,19 +641,19 @@ public class PvZ {
             }
         }
     }
+
     /**
      * Controls the movement of the zombies toward the house
-     *
      */
-    public static void plantVsZombie(){
+    public static void plantVsZombie() {
         int i;
-        for(i = 1; i < ROWS; i++){
-            for(Zombie z : laneZombies.get(i)){
+        for (i = 1; i < ROWS; i++) {
+            for (Zombie z : laneZombies.get(i)) {
                 boolean plantFound = false;
-                for(Plant p : plants){
-                    if(p.getX() == i && p.getY() == z.getY()){
+                for (Plant p : plants) {
+                    if (p.getX() == i && p.getY() == z.getY()) {
                         plantFound = true;
-                        if(!p.isDead()){
+                        if (!p.isDead()) {
                             p.loseHP(z.getDamage());
                             z.attack();
                             String type = (p instanceof Sunflower) ? "Sunflower" : (p instanceof Peashooter) ? "Peashooter" : "Plant";
@@ -649,20 +663,20 @@ public class PvZ {
                     }
                 }
 
-                if(!plantFound){
+                if (!plantFound) {
                     z.stopAttack();
                 }
             }
         }
     }
     // REMOVAL //
+
     /**
      * Controls the removal of plants and zombies if they are dead
-     *
      */
-    public static void deadPlantsAndZombies(){
-        plants.removeIf(p ->{
-            if(p.isDead()){
+    public static void deadPlantsAndZombies() {
+        plants.removeIf(p -> {
+            if (p.isDead()) {
                 System.out.println((p instanceof Sunflower ? "Sunflower" : "Peashooter") + " at Row " + p.getX() + ", Column " + p.getY() + " has been eaten.");
                 return true;
             }
@@ -670,10 +684,10 @@ public class PvZ {
         });
 
         int i;
-        for(i = 1; i < ROWS; i++){
+        for (i = 1; i < ROWS; i++) {
             final int currentRow = i;
-            laneZombies.get(i).removeIf(z ->{
-                if(z.isDead()){
+            laneZombies.get(i).removeIf(z -> {
+                if (z.isDead()) {
                     System.out.println("Zombie at Row " + currentRow + ", Column " + z.getY() + " has been defeated.");
                     return true;
                 }
@@ -682,30 +696,33 @@ public class PvZ {
         }
     }
     // LOCATIONS //
+
     /**
      * Controls if a plant tile is occupied by a plant
+     *
      * @param x Row
      * @param y Column
      */
-    public static boolean isTileOccupied(int x, int y){
-        for(Plant p : plants){
-            if(p.getX() == x && p.getY() == y){
+    public static boolean isTileOccupied(int x, int y) {
+        for (Plant p : plants) {
+            if (p.getX() == x && p.getY() == y) {
                 return true;
             }
         }
         return false;
     }
+
     /**
      * Controls when planting prompt should actually appear (work in progress)
-     *
      */
-    public static boolean shouldShowPlantingPrompt(){
+    public static boolean shouldShowPlantingPrompt() {
         // Check if the user can afford either Sunflower or Peashooter
         int sunflowerCost = new Sunflower(0, 0, currentTime).getCost();
         int peashooterCost = new Peashooter(0, 0).getCost();
 
         return sun >= sunflowerCost || sun >= peashooterCost;
     }
+}
     /*
         Sources:
             https://www.youtube.com/watch?v=mcXc8Mva2bA
@@ -716,4 +733,3 @@ public class PvZ {
             https://www.youtube.com/watch?v=taI7G6U29L8
             https://stackoverflow.com/questions/2979383/how-to-clear-the-console-using-java
     */
-}
