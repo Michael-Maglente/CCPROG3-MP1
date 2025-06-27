@@ -116,6 +116,7 @@ public class PvZ {
                     System.out.println("Invalid option! Try again...");
             }
         } while(gameRunning);
+        scanner.close();
     }
 
     // LAWN DISPLAY //
