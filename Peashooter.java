@@ -13,7 +13,7 @@ public class Peashooter extends Plant{
         super(x, y);
         this.cost = 100;
         this.health = 60;
-        this.damage = 4;
+        this.damage = 10;
         this.regenerateRate = 7.5;
         this.range = 8;
         this.speed = 1.4;
