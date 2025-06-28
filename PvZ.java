@@ -60,7 +60,7 @@ public class PvZ {
     /**
      * Queue of peas (projectiles) on the lawn
      */
-    public static List<int[]> peas = new ArrayList<>();
+    public static List<double[]> peas = new ArrayList<>();
     /**
      * 2D grid representing the lawn
      */
@@ -124,7 +124,7 @@ public class PvZ {
                         collectSun();
                         // PLANTING WINDOW LOGIC //
                         if (shouldShowPlantingPrompt()) {
-                            plantPlacementPrompt();
+                            plantPlacementPrompt(scanner);
                         }
                         // ZOMBIE LOGIC //
                         zombieSpawn();
@@ -217,8 +217,8 @@ public class PvZ {
             }
         }
         // for peas //
-        for (int[] pea : peas) {
-            int x = pea[0], y = pea[1];
+        for (double[] pea : peas) {
+            int x = (int)pea[0], y = (int)pea[1];
             if (y < COLS) {
                 if (lawn[x][y].equals(" ")) {
                     lawn[x][y] = "O";
@@ -320,7 +320,7 @@ public class PvZ {
      * Controls how the user places the plants in the tiles of the lawn to defend the house.
      */
     // PLANT PLACEMENT //
-    public static void plantPlacementPrompt() {
+    public static void plantPlacementPrompt(Scanner scanner) {
         while (sun >= 50) {
             if (!plants.isEmpty()) {
                 System.out.println("\nPlants on Lawn: ");
@@ -426,7 +426,7 @@ public class PvZ {
 
                 if (enemy != null) {
                     ps.updateShootPeaTime(currentTime);
-                    peas.add(new int[]{ps.getX(), ps.getY(), ps.getDamage()});
+                    peas.add(new double[]{ps.getX(), ps.getY(), ps.getDamage()});
                     System.out.println("Peashooter at Row " + ps.getX() + ", Column " + ps.getY() + " fired a pea!");
                 }
             }
@@ -437,43 +437,35 @@ public class PvZ {
      * Controls how the peas of the Peashooter shoot the zombies (projectile)
      */
     public static void movePeas() {
-        List<int[]> toRemove = new ArrayList<>();
+        List<double[]> toRemove = new ArrayList<>();
 
-        for (int[] pea : peas) {
-            pea[1]++; // move pea forward by 1 column
+        for (double[] pea : peas) {
+            pea[1] += 0.5; // move pea forward by 1 column
 
             if (pea[1] >= COLS) {
                 toRemove.add(pea); // pea out of bounds
                 continue;
             }
 
-            List<Zombie> lane = laneZombies.get(pea[0]);
-            Iterator<Zombie> it = lane.iterator();
+            List<Zombie> lane = laneZombies.get((int)pea[0]);
 
-            boolean hit = false;
 
-            while (it.hasNext()) {
-                Zombie z = it.next();
-
+            for(Zombie z : lane) {
+                if(z.isDead()) continue;
                 // Check for collision (allowing for smooth movement if using double y)
-                if (Math.abs(z.getY() - pea[1]) <= 0.5 && !z.isDead()) {
-                    z.loseHP(pea[2]);
+                if (Math.abs(z.getY() - pea[1]) <= 0.5) {
+                    z.loseHP((int)pea[2]);
 
                     System.out.printf("Pea hit Zombie at (%d, %.2f), -%d HP. Remaining HP: %d\n",
-                            z.getX(), (double)z.getY(), pea[2], z.getHealth());
+                            z.getX(), (double)z.getY(), (int)pea[2], z.getHealth());
+
+                    toRemove.add(pea); // pea hits one zombie, then disappears
 
                     if (z.isDead()) {
                         System.out.printf("Zombie at (%d, %.2f) died.\n", z.getX(), (double)z.getY());
-                        it.remove();
                     }
-
-                    toRemove.add(pea); // pea hits one zombie, then disappears
-                    hit = true;
                     break;
                 }
-            }
-            if(!hit && pea[1] >= COLS){
-                toRemove.add(pea); // just in case it reaches the end
             }
         }
         peas.removeAll(toRemove); // remove all peas that hit or went out
@@ -484,100 +476,6 @@ public class PvZ {
      * Controls the spawn logic of the zombies and how they are going to spawn per interval
      */
     public static void zombieSpawn() {
-        /*
-        if(currentTime >= 30 && currentTime <= 80 && currentTime % 10 == 0)
-        {
-            int lane = 1 + random.nextInt(ROWS - 1);
-            Zombie newZombie = new Zombie(lane, COLS - 1, currentTime);
-
-            // Overcrowding prevention //
-            boolean occupiedTile = false;
-            for (Zombie z : laneZombies[lane]) {
-                if (z.getY() == COLS - 1) {
-                    occupiedTile = true;
-                    break;
-                }
-            }
-
-            if (!occupiedTile) { // If tile is not occupied //
-                laneZombies[lane].add(newZombie);
-                System.out.println("Zombie spawned at Row " + lane + ", Column " + (COLS - 1) + " (Speed: " + newZombie.getSpeed() + ", Damage: "
-                        + newZombie.getDamage() + ", Health: " + newZombie.getHealth() + ")");
-            } else {
-                System.out.println("Zombie spawn skipped, Tile occupied at Row " + lane);
-            }
-        }
-        if(currentTime >= 81 && currentTime <= 140 && currentTime % 5 == 0){
-            int lane = random.nextInt(ROWS);
-            Zombie newZombie = new Zombie(lane, COLS - 1, currentTime);
-
-            // Overcrowding prevention //
-            boolean occupiedTile = false;
-            for(Zombie z : laneZombies[lane]){
-                if(z.getY() == COLS - 1){
-                    occupiedTile = true;
-                    break;
-                }
-            }
-
-            if(!occupiedTile){ // If tile is not occupied //
-                laneZombies[lane].add(newZombie);
-                System.out.println("Zombie spawned at Row " + lane + ", Column " + (COLS - 1) + " (Speed: " + newZombie.getSpeed() + ", Damage: "
-                        + newZombie.getDamage() + ", Health: " + newZombie.getHealth() + ")");
-            } else {
-                System.out.println("Zombie spawn skipped, Tile occupied at Row " + lane);
-            }
-        }
-
-        if(currentTime >= 141 && currentTime <= 170 && currentTime % 3 == 0){
-            int lane = random.nextInt(ROWS);
-            Zombie newZombie = new Zombie(lane, COLS - 1, currentTime);
-
-            // Overcrowding prevention //
-            boolean occupiedTile = false;
-            for(Zombie z : laneZombies[lane]){
-                if(z.getY() == COLS - 1){
-                    occupiedTile = true;
-                    break;
-                }
-            }
-
-            if(!occupiedTile){ // If tile is not occupied //
-                laneZombies[lane].add(newZombie);
-                System.out.println("Zombie spawned at Row " + lane + ", Column " + (COLS - 1) + " (Speed: " + newZombie.getSpeed() + ", Damage: "
-                        + newZombie.getDamage() + ", Health: " + newZombie.getHealth() + ")");
-            } else {
-                System.out.println("Zombie spawn skipped, Tile occupied at Row " + lane);
-            }
-        }
-
-        if(currentTime >= 171 && currentTime <= 180){
-            System.out.println("A huge wave of zombies is approaching!");
-
-            int i;
-            for(i = 0; i < 5; i++){
-                int lane = random.nextInt(ROWS);
-                Zombie newZombie = new Zombie(lane, COLS - 1, currentTime);
-
-                // Overcrowding prevention //
-                boolean occupiedTile = false;
-                for(Zombie z : laneZombies[lane]){
-                    if(z.getY() == COLS - 1){
-                        occupiedTile = true;
-                        break;
-                    }
-                }
-
-                if(!occupiedTile){ // If tile is not occupied //
-                    laneZombies[lane].add(newZombie);
-                    System.out.println("Zombie spawned at Row " + lane + ", Column " + (COLS - 1) + " (Speed: " + newZombie.getSpeed() + ", Damage: "
-                            + newZombie.getDamage() + ", Health: " + newZombie.getHealth() + ")");
-                } else {
-                    System.out.println("Zombie spawn skipped, Tile occupied at Row " + lane);
-                }
-            }
-        }
-        */
         int spawnInterval = 0; // no. of seconds, it takes zombies to spawn
         int spawnCount = 1; // no. of zombies to spawn
 
@@ -730,6 +628,4 @@ public class PvZ {
             https://www.reddit.com/r/java/comments/4v2uf9/made_a_textbased_open_world_pokemon_game_and_i/
             https://www.youtube.com/watch?v=GTP5lVEKXaU
             https://www.w3schools.com/java/java_inheritance.asp
-            https://www.youtube.com/watch?v=taI7G6U29L8
-            https://stackoverflow.com/questions/2979383/how-to-clear-the-console-using-java
     */
